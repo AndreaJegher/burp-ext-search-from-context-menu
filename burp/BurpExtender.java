@@ -5,6 +5,7 @@ import java.util.*;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Desktop;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -12,6 +13,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.awt.Component;
@@ -110,13 +112,24 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory, ITab
     }
 
     public void searchText(String text) {
+        String searchURI;
         try {
-            ProcessBuilder pb = new ProcessBuilder(browser, 
-            searchURL+URLEncoder.encode(text, StandardCharsets.UTF_8.toString()));
-            pb.start();
-        } catch (Exception ex) {
-            stderr.println(ex.toString());
-            throw new RuntimeException(ex.getCause());
+            searchURI = searchURL+URLEncoder.encode(text, StandardCharsets.UTF_8.toString());
+        } catch (Exception ex1) {
+            stderr.println(ex1.toString());
+            throw new RuntimeException(ex1.getCause());
+        }
+        try {
+            Desktop.getDesktop().browse(new URI(searchURI));
+        } catch (Exception ex1)  {
+            stderr.println(ex1.toString());
+            try {
+                ProcessBuilder pb = new ProcessBuilder(browser, searchURI);
+                pb.start();
+            } catch (Exception ex2) {
+                stderr.println(ex2.toString());
+                throw new RuntimeException(ex2.getCause());
+            }
         }
     }
 
